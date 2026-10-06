@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Вкусно — электронная кулинарная книга</title>
+<style>
+:root{
+  --bg:#f2f0eb; --paper:#fffefa; --ink:#20241f; --muted:#777a73;
+  --green:#314735; --green2:#445d48; --line:#e5e2da; --soft:#eeeae1;
+  --shadow:0 12px 35px rgba(40,43,37,.08); --radius:12px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{width:min(1180px,calc(100% - 28px));margin:14px auto 32px}
+.topbar{height:58px;background:rgba(255,255,255,.96);border:1px solid #e5e2dc;border-radius:12px 12px 0 0;display:flex;align-items:center;padding:0 22px;gap:24px}
+.brand{display:flex;align-items:center;gap:10px;min-width:235px;cursor:pointer}
+.brand-mark{font-size:28px;line-height:1}
+.brand strong{display:block;font-family:Georgia,serif;font-size:17px}
+.brand small{display:block;color:#999;font-size:8px;margin-top:2px}
+.nav{display:flex;gap:30px;align-items:center;justify-content:center;flex:1}
+.nav button{border:0;background:none;color:#3e413c;font-size:12px;padding:8px 0}
+.nav button:hover,.nav button.active{color:#1e2c20;font-weight:700}
+.header-actions{display:flex;gap:16px;align-items:center}
+.icon-btn{border:0;background:none;color:#444;font-size:18px;padding:5px}
+.avatar{width:25px;height:25px;border-radius:50%;background:#ddd;display:grid;place-items:center;font-size:13px}
+.view{display:none}
+.view.active{display:block}
+.hero{height:395px;position:relative;overflow:hidden;border-radius:0 0 0 0;background:#555}
+.hero img{width:100%;height:100%;object-fit:cover;display:block;filter:brightness(.63)}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(22,28,21,.65),rgba(22,28,21,.08) 70%)}
+.hero-content{position:absolute;left:58px;top:77px;width:470px;color:white}
+.hero h1{font:700 43px/1.02 Georgia,serif;margin:0 0 20px;letter-spacing:-1px}
+.hero p{font-size:16px;line-height:1.45;margin:0 0 28px;max-width:440px}
+.searchbar{height:47px;border-radius:25px;background:white;display:flex;align-items:center;padding:5px 6px 5px 16px;box-shadow:0 4px 16px rgba(0,0,0,.14)}
+.searchbar span{color:#8a8c88;font-size:15px}
+.searchbar input{border:0;outline:0;flex:1;min-width:0;padding:0 9px;font-size:13px}
+.searchbar button{border:0;background:var(--green);color:#fff;border-radius:22px;height:37px;padding:0 22px}
+.dots{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:6px}
+.dot{width:6px;height:6px;border-radius:50%;background:#ddd}
+.dot.active{background:#fff;width:7px;height:7px}
+.section{background:var(--paper);padding:27px 28px}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:17px}
+.section h2{font:700 22px Georgia,serif;margin:0}
+.section-link{border:0;background:none;color:#596158;font-size:11px}
+.category-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.category-card{border:1px solid var(--line);border-radius:10px;background:#fff;padding:7px 7px 10px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.04);transition:.2s}
+.category-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.category-card img{width:100%;height:82px;object-fit:cover;border-radius:8px}
+.category-card strong{display:block;font-size:12px;margin:9px 0 5px}
+.category-card small{color:#999;font-size:10px}
+.recipe-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.035);transition:.2s;position:relative}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.card-img{height:143px;position:relative;overflow:hidden}
+.card-img img{width:100%;height:100%;object-fit:cover;display:block}
+.heart{position:absolute;right:9px;top:8px;width:29px;height:29px;border-radius:50%;border:0;background:rgba(255,255,255,.9);font-size:16px;color:#576058;display:grid;place-items:center}
+.heart.saved{color:#fff;background:var(--green)}
+.card-body{padding:12px 12px 13px}
+.card h3{font:700 15px/1.15 Georgia,serif;margin:0 0 9px;min-height:34px}
+.meta{display:flex;gap:13px;color:#7c7f79;font-size:10px}
+.meta span{white-space:nowrap}
+.footer{background:#263a2a;color:#fff;padding:31px 34px 18px;border-radius:0 0 12px 12px}
+.footer-main{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:30px}
+.footer .brand{color:white;min-width:0}
+.footer .brand small{color:#aab5ab}
+.footer h4{font-size:11px;margin:0 0 10px}
+.footer a,.footer button{display:block;color:#bdc8bd;text-decoration:none;border:0;background:none;padding:3px 0;font-size:10px}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.14);margin-top:22px;padding-top:12px;display:flex;justify-content:space-between;color:#9eaa9f;font-size:9px}
+
+.page-hero{height:130px;position:relative;overflow:hidden;color:#fff}
+.page-hero img{width:100%;height:100%;object-fit:cover;filter:brightness(.56)}
+.page-hero .hero-overlay{background:linear-gradient(90deg,rgba(22,28,21,.65),rgba(22,28,21,.1))}
+.page-hero-content{position:absolute;left:45px;top:30px}
+.page-hero h1{font:700 31px Georgia,serif;margin:0 0 7px}
+.page-hero p{font-size:12px;margin:0}
+.content-layout{display:grid;grid-template-columns:205px 1fr;background:var(--paper);min-height:520px}
+.sidebar{padding:27px 17px 27px 25px;border-right:1px solid var(--line)}
+.sidebar h3{font:700 16px Georgia,serif;margin:0 0 17px}
+.side-btn{width:100%;border:0;background:none;text-align:left;border-radius:8px;padding:10px 11px;color:#565a54;font-size:11px;margin-bottom:3px}
+.side-btn:hover,.side-btn.active{background:#dedfd9;color:#273229;font-weight:700}
+.catalog{padding:27px 24px}
+.catalog-tools{display:flex;gap:10px;margin-bottom:16px}
+.catalog-tools .searchbar{height:37px;box-shadow:0 3px 12px rgba(0,0,0,.05);border:1px solid var(--line);flex:1}
+.catalog-tools .searchbar button{display:none}
+.sort{height:37px;border:1px solid var(--line);border-radius:20px;background:#fff;padding:0 14px;color:#777;font-size:10px}
+.catalog .recipe-grid{grid-template-columns:repeat(2,1fr);gap:13px}
+.catalog .card-img{height:125px}
+.pagination{display:flex;justify-content:center;gap:18px;align-items:center;margin:25px 0 3px;font-size:11px}
+.page-num{border:0;background:none}
+.page-num.current{background:var(--green);color:#fff;border-radius:8px;width:25px;height:25px}
+.detail{background:var(--paper);padding:15px 22px 28px}
+.back{border:0;background:none;color:#777;font-size:11px;margin-bottom:13px}
+.detail-top{display:grid;grid-template-columns:46% 54%;gap:22px}
+.detail-top img{width:100%;height:255px;object-fit:cover;border-radius:9px}
+.detail-info h1{font:700 30px/1.05 Georgia,serif;margin:5px 0 12px}
+.detail-desc{color:#666;font-size:12px;line-height:1.5;max-width:530px}
+.detail-meta{display:flex;gap:24px;font-size:11px;color:#555;margin:12px 0}
+.favorite-main{border:0;background:var(--green);color:#fff;border-radius:18px;padding:9px 15px;font-size:10px}
+.detail-bottom{display:grid;grid-template-columns:39% 61%;border-top:1px solid var(--line);margin-top:18px;padding-top:20px}
+.detail-bottom h3{font:700 17px Georgia,serif;margin:0 0 14px}
+.ingredients{padding-right:24px;border-right:1px solid var(--line)}
+.ingredient{font-size:11px;color:#6d706a;padding:5px 0;display:flex;gap:9px}
+.ingredient i{width:10px;height:10px;border:1px solid #d6d7d0;border-radius:50%;display:block;flex:none}
+.steps{padding-left:24px}
+.step{display:grid;grid-template-columns:25px 1fr;gap:9px;margin-bottom:10px;color:#6d706a;font-size:11px;line-height:1.4}
+.step b{width:22px;height:22px;border-radius:50%;background:#f0f0eb;color:#777;display:grid;place-items:center;font-size:10px}
+
+.empty{padding:55px 15px;text-align:center;color:#777}
+.empty h2{font:700 24px Georgia,serif;color:#252923}
+
+.modal{position:fixed;inset:0;background:rgba(20,25,21,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+.modal.open{display:flex}
+.modal-box{width:min(900px,100%);max-height:90vh;overflow:auto;background:#fffefa;border-radius:14px;box-shadow:0 25px 80px rgba(0,0,0,.3)}
+.modal-close{position:absolute}
+.toast{position:fixed;left:50%;bottom:25px;transform:translateX(-50%) translateY(15px);background:#263a2a;color:#fff;padding:10px 16px;border-radius:22px;font-size:11px;opacity:0;pointer-events:none;transition:.25s;z-index:100}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:900px){
+  .nav{gap:14px}.brand{min-width:180px}
+  .category-row{grid-template-columns:repeat(3,1fr)}
+  .recipe-grid{grid-template-columns:repeat(2,1fr)}
+  .footer-main{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:650px){
+  .app{width:100%;margin:0}.topbar{border-radius:0;height:54px;padding:0 13px;gap:10px}.brand{min-width:0;flex:1}.brand small{display:none}.brand strong{font-size:15px}
+  .nav{display:none}.header-actions{gap:6px}
+  .hero{height:420px}.hero-content{left:24px;right:24px;top:64px;width:auto}.hero h1{font-size:37px}.hero p{font-size:14px}
+  .section{padding:22px 14px}.section h2{font-size:19px}.category-row{grid-template-columns:repeat(3,1fr);gap:8px}.category-card img{height:67px}.category-card strong{font-size:10px}
+  .recipe-grid{grid-template-columns:repeat(2,1fr);gap:9px}.card-img{height:115px}.card-body{padding:9px}.card h3{font-size:12px}.meta{font-size:8px;gap:7px}
+  .footer{border-radius:0;padding:25px 18px}.footer-main{grid-template-columns:1fr 1fr}.footer-bottom{display:block;line-height:1.7}
+  .content-layout{display:block}.sidebar{display:flex;overflow:auto;border-right:0;border-bottom:1px solid var(--line);padding:10px}.sidebar h3{display:none}.side-btn{width:auto;white-space:nowrap;margin:0;padding:8px 11px}
+  .catalog{padding:16px 13px}.catalog-tools{flex-direction:column}.catalog .recipe-grid{grid-template-columns:repeat(2,1fr)}
+  .page-hero{height:115px}.page-hero-content{left:22px;top:28px}
+  .detail{padding:12px}.detail-top{display:block}.detail-top img{height:220px}.detail-info h1{font-size:26px}.detail-bottom{grid-template-columns:1fr}.ingredients{border-right:0;border-bottom:1px solid var(--line);padding:0 0 15px}.steps{padding:17px 0 0}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand" onclick="showView('home')">
+      <div class="brand-mark">♧</div>
+      <div><strong>Вкусно</strong><small>Электронная кулинарная книга</small></div>
+    </div>
+    <nav class="nav">
+      <button data-view="home" onclick="showView('home')">Главная</button>
+      <button data-view="catalog" onclick="showView('catalog')">Рецепты</button>
+      <button data-view="categories" onclick="showView('categories')">Категории</button>
+      <button data-view="favorites" onclick="showView('favorites')">Избранное</button>
+    </nav>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="focusSearch()" aria-label="Поиск">⌕</button>
+      <div class="avatar">◉</div>
+    </div>
+  </header>
+
+  <main>
+    <section id="home" class="view active"></section>
+    <section id="catalog" class="view"></section>
+    <section id="categories" class="view"></section>
+    <section id="favorites" class="view"></section>
+    <section id="search" class="view"></section>
+    <section id="detail" class="view"></section>
+  </main>
+</div>
+
+<div id="modal" class="modal" onclick="if(event.target===this)closeModal()">
+  <div id="modalBox" class="modal-box"></div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script>
+const IMG = {
+  pasta:"https://ovenharmony.com/assets/images/1763215461360-s74f5li8.webp",
+  soup:"https://images.unsplash.com/photo-1642255485002-1952ee6b6fd5?auto=format&fit=crop&w=1200&q=85",
+  chicken:"https://mcxhoreca.vtexassets.com/arquivos/ids/172702-800-800?aspect=true&height=800&v=638938021228230000&width=800",
+  caesar:"https://radiotrek.rv.ua/uploads/media/47/7d/477da9f01e7e7229f84baceed6cfa732_orig.jpg",
+  charlotte:"https://lesbonnesrecettes.fr/images/seo/recette/charlotte-aux-pommes-fondante-et-gourmande-13414.webp",
+  syrniki:"https://spooncheck.com/images/dishes/photos/syrniki.png",
+  greek:"https://taverna-olive.de/static/img/slider-7.jpg",
+  borsch:"https://static.mk.ru/upload/entities/2026/09/01/18/articles/facebookPicture/4a/1e/82/e5/e1a37466ffe1499f33b2e7388fb4b276.jpg",
+  cake:"https://essenrezept.de/wp-content/uploads/2021/01/Schoko-Kuchen-1024x939.png",
+  pancakes:"https://images.news.ru/2026/03/25/clCWEiFFoCp1R689duB1J1rzj123vuh4dNXij6PA_1200.png",
+  salmon:"https://snapcalorie-webflow-website.s3.us-east-2.amazonaws.com/media/recipe_pics_v2/medium/lemon_herb_baked_salmon.jpg",
+  stroganoff:"https://cdn.prod.website-files.com/65e2ec4e51f6693a3af9151d/660ea9318f2951604251bba0_660ea8c15b39784f4a08aac1_86c1e90d-e56b-40d5-bf94-0fd8298eb656%20%281%29.webp",
+  pelmeni:"https://recipeworld.blog/recipes/pelmeni-step-5.webp",
+  carbonara:"https://cdnes.thamhiemmekong.com/2026/04/54/thumb.jpg",
+  draniki:"https://imageproxy.wolt.com/assets/67335dc8f80c1126648b8056",
+  curry:"https://cookingkeys.com/assets/images/1736926395577-fdlsu0ex.webp",
+  bolognese:"https://snapcalorie-webflow-website.s3.us-east-2.amazonaws.com/media/food_pics_v2/medium/fuel_pasta_bolognese.jpg",
+  pizza:"https://d1w7312wesee68.cloudfront.net/0jdLn0jV16ub-Vi7UNVaUSLN3A9kj_zOTDzxBIEVxs4/resize%3Afit%3A720%3A720/plain/s3%3A/toasttab/restaurants/restaurant-195821000000000000/menu/items/4/item-1100000000252749244_1728599713.jpg",
+  cheesecake:"https://bitebuffet.com/images/large/exploring-gluten-free-options-cheesecake-berry-topping.webp",
+  brownie:"https://images.unsplash.com/photo-1461009312844-e80697a81cc7?auto=format&fit=crop&w=1200&q=85"
+};
+const recipes = [
+{id:1,name:"Паста с курицей в сливочном соусе",cat:"Основные блюда",time:30,diff:"Средняя",img:IMG.pasta,desc:"Нежная паста, сочная курица и ароматный сливочный соус. Простое, но очень вкусное блюдо, которое подойдет для ужина или обеда.",ings:["Куриное филе — 400 г","Паста (фарфалле, пенне) — 300 г","Сливки 20% — 200 мл","Чеснок — 2 зубчика","Сыр пармезан — 50 г","Соль, перец — по вкусу","Растительное масло — 1 ст. л."],steps:["Куриное филе нарежьте небольшими кусочками, обжарьте на сковороде с маслом до золотистой корочки.","Добавьте измельченный чеснок, обжарьте 1 минуту.","Влейте сливки, поперчите, посолите до кипения и тушите 5–7 минут.","Отварите пасту до готовности.","Соедините пасту с соусом, добавьте тертый сыр и перемешайте. Подавайте горячей."]},
+{id:2,name:"Куриный суп с лапшой",cat:"Супы",time:45,diff:"Легкая",img:IMG.soup,desc:"Домашний куриный суп с овощами и нежной лапшой.",ings:["Куриное бедро — 500 г","Лапша — 120 г","Морковь — 1 шт.","Лук — 1 шт.","Картофель — 2 шт.","Зелень, соль, перец"],steps:["Сварите курицу до готовности и снимите пену.","Добавьте лук, морковь и картофель.","Через 15 минут добавьте лапшу.","Посолите, поперчите и доведите до готовности.","Подавайте с зеленью."]},
+{id:3,name:"Курица с картошкой и чесноком",cat:"Основные блюда",time:70,diff:"Средняя",img:IMG.chicken,desc:"Сочная курица и румяный картофель, запеченные вместе с чесноком и травами.",ings:["Куриные бедра — 700 г","Картофель — 800 г","Чеснок — 5 зубчиков","Масло — 2 ст. л.","Паприка — 1 ч. л.","Соль, перец"],steps:["Картофель нарежьте крупными кусочками.","Курицу натрите солью, перцем и паприкой.","Смешайте все с маслом и чесноком.","Запекайте при 190°C около 55–60 минут.","Подавайте сразу, пока картофель хрустящий."]},
+{id:4,name:"Цезарь с курицей и хрустящими гренками",cat:"Салаты",time:30,diff:"Средняя",img:IMG.caesar,desc:"Классический салат с сочной курицей, хрустящими гренками и сливочной заправкой.",ings:["Куриное филе — 300 г","Салат романо — 1 кочан","Белый хлеб — 100 г","Пармезан — 50 г","Йогурт — 3 ст. л.","Горчица — 1 ч. л.","Лимонный сок — 1 ст. л."],steps:["Курицу обжарьте до румяной корочки и нарежьте.","Хлеб нарежьте кубиками и подсушите на сковороде.","Смешайте йогурт, горчицу и лимонный сок.","Соедините салат, курицу и гренки.","Полейте заправкой и посыпьте пармезаном."]},
+{id:5,name:"Шарлотка с яблоками",cat:"Десерты",time:55,diff:"Легкая",img:IMG.charlotte,desc:"Мягкая домашняя шарлотка с большим количеством яблок и золотистой корочкой.",ings:["Яблоки — 4 шт.","Яйца — 3 шт.","Сахар — 150 г","Мука — 160 г","Разрыхлитель — 1 ч. л.","Корица — 1 ч. л."],steps:["Яблоки очистите и нарежьте дольками.","Яйца взбейте с сахаром до пышной светлой массы.","Добавьте муку и разрыхлитель.","Выложите яблоки в форму и залейте тестом.","Выпекайте при 180°C 40–45 минут."]},
+{id:6,name:"Сырники с ягодами и сметаной",cat:"Завтраки",time:25,diff:"Легкая",img:IMG.syrniki,desc:"Нежные творожные сырники с румяной корочкой, ягодами и сметаной.",ings:["Творог 5–9% — 500 г","Яйцо — 1 шт.","Мука — 3 ст. л.","Сахар — 2 ст. л.","Ваниль — по вкусу","Ягоды и сметана — для подачи"],steps:["Разомните творог с яйцом и сахаром.","Добавьте муку и ваниль, перемешайте.","Сформируйте небольшие сырники.","Обжарьте на среднем огне по 3–4 минуты с каждой стороны.","Подавайте с ягодами и сметаной."]},
+{id:7,name:"Греческий салат",cat:"Салаты",time:15,diff:"Легкая",img:IMG.greek,desc:"Свежий салат с овощами, фетой, оливками и ароматной заправкой.",ings:["Помидоры — 3 шт.","Огурцы — 2 шт.","Фета — 150 г","Оливки — 80 г","Красный лук — 1/2 шт.","Оливковое масло — 2 ст. л.","Орегано"],steps:["Нарежьте овощи крупными кусочками.","Добавьте фету и оливки.","Полейте оливковым маслом.","Посыпьте орегано и аккуратно перемешайте."]},
+{id:8,name:"Борщ классический",cat:"Супы",time:130,diff:"Средняя",img:IMG.borsch,desc:"Насыщенный домашний борщ с мясом, свеклой, капустой и сметаной.",ings:["Говядина на кости — 600 г","Свекла — 2 шт.","Капуста — 300 г","Картофель — 3 шт.","Морковь — 1 шт.","Лук — 1 шт.","Томатная паста — 2 ст. л.","Сметана — для подачи"],steps:["Сварите мясной бульон и отделите мясо.","Обжарьте лук, морковь и свеклу с томатной пастой.","В бульон добавьте картофель и капусту.","Добавьте свекольную заправку и мясо.","Томите на слабом огне 20 минут и дайте настояться."]},
+{id:9,name:"Шоколадный торт",cat:"Десерты",time:60,diff:"Сложная",img:IMG.cake,desc:"Насыщенный шоколадный торт с мягкими коржами и густым кремом.",ings:["Мука — 220 г","Какао — 50 г","Яйца — 2 шт.","Сахар — 180 г","Молоко — 180 мл","Сливочное масло — 80 г","Сливки — 200 мл"],steps:["Смешайте сухие ингредиенты.","Добавьте яйца, молоко и растопленное масло.","Выпекайте корж при 180°C около 35 минут.","Остудите и разрежьте на коржи.","Промажьте кремом и охладите торт."]},
+{id:10,name:"Панкейки с бананом и ягодами",cat:"Завтраки",time:25,diff:"Легкая",img:IMG.pancakes,desc:"Пышные панкейки с бананом, свежими ягодами и легким сладким соусом.",ings:["Банан — 1 шт.","Яйцо — 1 шт.","Молоко — 150 мл","Мука — 160 г","Разрыхлитель — 1 ч. л.","Сахар — 1 ст. л.","Ягоды — для подачи"],steps:["Разомните банан.","Добавьте яйцо и молоко.","Вмешайте муку, сахар и разрыхлитель.","Жарьте небольшие панкейки по 1–2 минуты с каждой стороны.","Подавайте с ягодами."]},
+{id:11,name:"Запеченный лосось с лимоном",cat:"Основные блюда",time:35,diff:"Легкая",img:IMG.salmon,desc:"Нежный лосось, запеченный с лимоном и травами.",ings:["Филе лосося — 600 г","Лимон — 1 шт.","Оливковое масло — 1 ст. л.","Чеснок — 2 зубчика","Итальянские травы","Соль, перец"],steps:["Посолите и поперчите лосось.","Сбрызните маслом и добавьте чеснок.","Разложите ломтики лимона.","Запекайте при 190°C 18–22 минуты.","Подавайте с овощами или рисом."]},
+{id:12,name:"Бефстроганов с картофельным пюре",cat:"Основные блюда",time:50,diff:"Средняя",img:IMG.stroganoff,desc:"Нежная говядина в сливочном соусе с классическим картофельным пюре.",ings:["Говядина — 500 г","Лук — 1 шт.","Сметана — 180 г","Горчица — 1 ч. л.","Картофель — 700 г","Молоко — 100 мл"],steps:["Нарежьте говядину тонкими полосками.","Быстро обжарьте мясо на сильном огне.","Добавьте лук и готовьте до мягкости.","Вмешайте сметану и горчицу, тушите 10 минут.","Отдельно приготовьте пюре и подавайте вместе."]},
+{id:13,name:"Пельмени со сметаной и укропом",cat:"Основные блюда",time:30,diff:"Легкая",img:IMG.pelmeni,desc:"Горячие сочные пельмени с холодной сметаной и свежим укропом.",ings:["Пельмени — 500 г","Сметана — 150 г","Укроп — 20 г","Сливочное масло — 20 г","Соль"],steps:["Вскипятите подсоленную воду.","Опустите пельмени и перемешайте.","Варите 5–7 минут после всплытия.","Слейте воду и добавьте масло.","Подавайте со сметаной и укропом."]},
+{id:14,name:"Спагетти карбонара",cat:"Основные блюда",time:25,diff:"Средняя",img:IMG.carbonara,desc:"Итальянская паста с беконом, сыром и шелковистым яичным соусом.",ings:["Спагетти — 300 г","Бекон — 150 г","Яйца — 2 шт.","Пармезан — 70 г","Черный перец"],steps:["Отварите спагетти до al dente.","Обжарьте бекон до хрустящей корочки.","Смешайте яйца с сыром и большим количеством перца.","Соедините горячую пасту с беконом.","Снимите с огня и быстро вмешайте яичный соус."]},
+{id:15,name:"Драники со сметаной",cat:"Завтраки",time:30,diff:"Легкая",img:IMG.draniki,desc:"Хрустящие картофельные драники с мягкой серединой и сметаной.",ings:["Картофель — 600 г","Лук — 1 шт.","Яйцо — 1 шт.","Мука — 1 ст. л.","Соль, перец","Сметана"],steps:["Натрите картофель и лук.","Отожмите лишнюю жидкость.","Добавьте яйцо, муку, соль и перец.","Жарьте ложкой на хорошо разогретой сковороде.","Подавайте горячими со сметаной."]},
+{id:16,name:"Курица карри с рисом",cat:"Основные блюда",time:40,diff:"Средняя",img:IMG.curry,desc:"Пряная курица в густом соусе карри с рассыпчатым рисом.",ings:["Куриное филе — 500 г","Кокосовое молоко — 250 мл","Карри — 2 ч. л.","Лук — 1 шт.","Чеснок — 2 зубчика","Рис — 200 г"],steps:["Обжарьте курицу до золотистой корочки.","Добавьте лук и чеснок.","Всыпьте карри и перемешайте.","Влейте кокосовое молоко и тушите 15 минут.","Отдельно сварите рис и подайте с курицей."]},
+{id:17,name:"Спагетти болоньезе",cat:"Основные блюда",time:55,diff:"Средняя",img:IMG.bolognese,desc:"Классическая паста с густым мясным томатным соусом.",ings:["Спагетти — 300 г","Фарш — 400 г","Томаты — 400 г","Лук — 1 шт.","Морковь — 1 шт.","Чеснок — 2 зубчика","Пармезан"],steps:["Обжарьте фарш до румяной корочки.","Добавьте лук, морковь и чеснок.","Влейте томаты и доведите до кипения.","Тушите соус на слабом огне 30 минут.","Отварите спагетти и подайте с соусом."]},
+{id:18,name:"Пицца Маргарита",cat:"Основные блюда",time:45,diff:"Средняя",img:IMG.pizza,desc:"Тонкая пицца с томатным соусом, моцареллой и свежим базиликом.",ings:["Тесто для пиццы — 300 г","Томатный соус — 100 г","Моцарелла — 150 г","Базилик","Оливковое масло"],steps:["Раскатайте тесто в тонкий круг.","Смажьте томатным соусом.","Добавьте моцареллу.","Выпекайте при максимально высокой температуре 8–12 минут.","Украсьте базиликом и маслом."]},
+{id:19,name:"Чизкейк с ягодами",cat:"Десерты",time:80,diff:"Сложная",img:IMG.cheesecake,desc:"Кремовый чизкейк на песочной основе со свежими ягодами.",ings:["Сливочный сыр — 600 г","Печенье — 250 г","Сливочное масло — 100 г","Яйца — 3 шт.","Сахар — 150 г","Ягоды — 150 г"],steps:["Измельчите печенье и смешайте с маслом.","Утрамбуйте основу в форме.","Взбейте сыр с сахаром и яйцами.","Вылейте начинку на основу.","Выпекайте при 160°C около 55 минут, остудите и украсьте ягодами."]},
+{id:20,name:"Шоколадный брауни",cat:"Десерты",time:40,diff:"Легкая",img:IMG.brownie,desc:"Плотный шоколадный брауни с влажной серединой и насыщенным вкусом.",ings:["Темный шоколад — 180 г","Сливочное масло — 120 г","Яйца — 3 шт.","Сахар — 150 г","Мука — 100 г","Какао — 25 г"],steps:["Растопите шоколад с маслом.","Взбейте яйца с сахаром.","Соедините обе смеси.","Добавьте муку и какао, перемешайте без долгого взбивания.","Выпекайте при 175°C 22–27 минут."]},
+{id:21,name:"Овощной суп",cat:"Супы",time:30,diff:"Легкая",img:IMG.soup,desc:"Легкий овощной суп с морковью, картофелем, томатами и зеленью.",ings:["Картофель — 3 шт.","Морковь — 1 шт.","Томаты — 2 шт.","Лук — 1 шт.","Кабачок — 1/2 шт.","Зелень"],steps:["Нарежьте овощи.","Сначала отварите картофель и морковь.","Добавьте лук, томаты и кабачок.","Варите до мягкости.","Добавьте зелень перед подачей."]},
+{id:22,name:"Тыквенный крем-суп",cat:"Супы",time:40,diff:"Легкая",img:IMG.soup,desc:"Гладкий сливочный крем-суп из запеченной тыквы.",ings:["Тыква — 700 г","Лук — 1 шт.","Сливки — 150 мл","Бульон — 500 мл","Мускатный орех","Соль"],steps:["Запеките тыкву до мягкости.","Обжарьте лук.","Соедините тыкву, лук и бульон.","Пробейте блендером до гладкости.","Добавьте сливки и прогрейте, не доводя до сильного кипения."]},
+{id:23,name:"Грибной суп-пюре",cat:"Супы",time:35,diff:"Средняя",img:IMG.soup,desc:"Ароматный кремовый суп из шампиньонов со сливками.",ings:["Шампиньоны — 500 г","Лук — 1 шт.","Картофель — 2 шт.","Сливки — 180 мл","Бульон — 500 мл","Сливочное масло — 20 г"],steps:["Обжарьте грибы и лук на сливочном масле.","Добавьте картофель и бульон.","Варите до мягкости.","Пробейте блендером.","Добавьте сливки и прогрейте еще 3 минуты."]},
+{id:24,name:"Куриные котлеты с пюре",cat:"Основные блюда",time:45,diff:"Средняя",img:IMG.chicken,desc:"Сочные домашние котлеты из курицы с нежным картофельным пюре.",ings:["Куриный фарш — 500 г","Лук — 1 шт.","Яйцо — 1 шт.","Хлеб — 2 ломтика","Картофель — 700 г","Молоко — 100 мл"],steps:["Смешайте фарш с луком, яйцом и размоченным хлебом.","Сформируйте котлеты.","Обжарьте с двух сторон и доведите под крышкой.","Картофель сварите и разомните с молоком.","Подавайте котлеты с пюре."]}
+];
+
+const cats = [
+ {name:"Салаты", img:IMG.greek, count:124},
+ {name:"Супы", img:IMG.soup, count:98},
+ {name:"Основные блюда", img:IMG.pasta, count:213},
+ {name:"Десерты", img:IMG.cheesecake, count:176},
+ {name:"Выпечка", img:IMG.charlotte, count:142},
+ {name:"Напитки", img:"https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=700&q=80", count:67}
+];
+let favorites = JSON.parse(localStorage.getItem("vkusno-favorites") || "[]");
+let selectedCategory = "Все";
+let searchTerm = "";
+let sortMode = "popular";
+
+function saveFav(){localStorage.setItem("vkusno-favorites",JSON.stringify(favorites))}
+function isFav(id){return favorites.includes(id)}
+function toggleFav(id){
+  if(isFav(id)) favorites=favorites.filter(x=>x!==id); else favorites.push(id);
+  saveFav(); renderAll();
+  toast(isFav(id)?"Добавлено в избранное":"Удалено из избранного");
+}
+function toast(t){const el=document.getElementById("toast");el.textContent=t;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),1600)}
+function recipeCard(r){
+ return `<article class="card">
+   <div class="card-img" onclick="openRecipe(${r.id})"><img src="${r.img}" alt="${r.name}" loading="lazy"><button class="heart ${isFav(r.id)?"saved":""}" onclick="event.stopPropagation();toggleFav(${r.id})">${isFav(r.id)?"♥":"♡"}</button></div>
+   <div class="card-body" onclick="openRecipe(${r.id})"><h3>${r.name}</h3><div class="meta"><span>◷ ${r.time} мин</span><span>♧ ${r.diff}</span></div></div>
+ </article>`
+}
+function categoryCards(){
+ return cats.map(c=>`<button class="category-card" onclick="filterCategory('${c.name}')"><img src="${c.img}" alt="${c.name}" loading="lazy"><strong>${c.name}</strong><small>${c.count} рецептов</small></button>`).join("");
+}
+function filteredRecipes(){
+ let list=[...recipes];
+ if(selectedCategory!=="Все") list=list.filter(r=>r.cat===selectedCategory);
+ if(searchTerm) list=list.filter(r=>(r.name+" "+r.cat+" "+r.desc).toLowerCase().includes(searchTerm.toLowerCase()));
+ if(sortMode==="time") list.sort((a,b)=>a.time-b.time);
+ if(sortMode==="name") list.sort((a,b)=>a.name.localeCompare(b.name,"ru"));
+ return list;
+}
+function homeHTML(){
+ const popular=recipes.slice(0,4);
+ return `<section class="hero">
+   <img src="${IMG.pasta}" alt="Паста с курицей">
+   <div class="hero-overlay"></div>
+   <div class="hero-content">
+     <h1>Готовим вкусно<br>каждый день</h1>
+     <p>Тысячи проверенных рецептов, которые сделают твои будни и праздники особенными.</p>
+     <div class="searchbar"><span>⌕</span><input id="heroSearch" placeholder="Что приготовить сегодня?" onkeydown="if(event.key==='Enter')doSearch(this.value)"><button onclick="doSearch(document.getElementById('heroSearch').value)">Найти</button></div>
+   </div>
+   <div class="dots"><i class="dot active"></i><i class="dot"></i><i class="dot"></i></div>
+ </section>
+ <section class="section"><div class="section-head"><h2>Популярные категории</h2><button class="section-link" onclick="showView('categories')">Смотреть все →</button></div><div class="category-row">${categoryCards()}</div></section>
+ <section class="section"><div class="section-head"><h2>Популярные рецепты</h2><button class="section-link" onclick="showView('catalog')">Смотреть все →</button></div><div class="recipe-grid">${popular.map(recipeCard).join("")}</div></section>
+ <footer class="footer">${footerHTML()}</footer>`;
+}
+function footerHTML(){
+ return `<div class="footer-main">
+   <div><div class="brand"><div class="brand-mark">♧</div><div><strong>Вкусно</strong><small>Электронная кулинарная книга</small></div></div></div>
+   <div><h4>Навигация</h4><button onclick="showView('home')">Главная</button><button onclick="showView('catalog')">Рецепты</button><button onclick="showView('categories')">Категории</button><button onclick="showView('favorites')">Избранное</button></div>
+   <div><h4>Контакты</h4><a href="mailto:example@mail.ru">✉ example@mail.ru</a><a href="tel:+79991234567">☎ +7 (999) 123-45-67</a></div>
+   <div><h4>Мы в соцсетях</h4><a href="#">VK</a><a href="#">Telegram</a><a href="#">Instagram</a></div>
+ </div><div class="footer-bottom"><span>© 2025 Вкусно. Все права защищены.</span><span>Политика конфиденциальности　 Условия использования</span></div>`;
+}
+function catalogHTML(title="Рецепты", subtitle="Собрали блюда на каждый день"){
+ return `<div class="page-hero"><img src="${IMG.soup}" alt=""><div class="hero-overlay"></div><div class="page-hero-content"><h1>${title}</h1><p>${subtitle}</p></div></div>
+ <div class="content-layout"><aside class="sidebar"><h3>Категории</h3>
+ ${["Все","Салаты","Супы","Основные блюда","Десерты","Выпечка","Напитки"].map(c=>`<button class="side-btn ${selectedCategory===c?"active":""}" onclick="filterCategory('${c}')">◉　${c}</button>`).join("")}
+ </aside><section class="catalog"><div class="catalog-tools"><div class="searchbar"><span>⌕</span><input value="${searchTerm}" placeholder="Поиск по рецептам..." oninput="searchCatalog(this.value)"></div><select class="sort" onchange="sortMode=this.value;renderCatalog()"><option value="popular" ${sortMode==="popular"?"selected":""}>По популярности</option><option value="time" ${sortMode==="time"?"selected":""}>Самые быстрые</option><option value="name" ${sortMode==="name"?"selected":""}>По названию</option></select></div>
+ <div class="recipe-grid">${filteredRecipes().map(recipeCard).join("") || `<div class="empty"><h2>Ничего не нашли</h2><p>Попробуй изменить запрос или категорию.</p></div>`}</div>
+ <div class="pagination"><button class="page-num current">1</button><button class="page-num">2</button><button class="page-num">3</button><span>…</span><button class="page-num">›</button></div></section></div>`;
+}
+function categoriesHTML(){
+ return `<div class="page-hero"><img src="${IMG.greek}" alt=""><div class="hero-overlay"></div><div class="page-hero-content"><h1>Категории</h1><p>Выбирай настроение и готовь то, что хочется именно сегодня.</p></div></div>
+ <section class="section"><div class="category-row">${categoryCards()}</div></section>
+ <section class="section"><div class="section-head"><h2>Все рецепты</h2></div><div class="recipe-grid">${recipes.slice(0,8).map(recipeCard).join("")}</div></section>`;
+}
+function favoritesHTML(){
+ const list=recipes.filter(r=>isFav(r.id));
+ return `<div class="page-hero"><img src="${IMG.cake}" alt=""><div class="hero-overlay"></div><div class="page-hero-content"><h1>Избранное</h1><p>${list.length} ${list.length===1?"рецепт":"рецептов"} сохранено</p></div></div>
+ <section class="section">${list.length?`<div class="recipe-grid">${list.map(recipeCard).join("")}</div>`:`<div class="empty"><h2>Здесь пока пусто</h2><p>Нажимай ♡ на карточках рецептов, чтобы сохранить любимые блюда.</p><button class="favorite-main" onclick="showView('catalog')">Перейти к рецептам</button></div>`}</section>`;
+}
+function searchHTML(){
+ const list=filteredRecipes();
+ return `<div class="content-layout" style="grid-template-columns:1fr"><section class="catalog"><div class="catalog-tools"><div class="searchbar"><span>⌕</span><input id="searchInput" value="${searchTerm}" placeholder="Поиск по рецептам..." oninput="searchCatalog(this.value)"><button onclick="doSearch(document.getElementById('searchInput').value)">Найти</button></div></div><h2 style="font:700 22px Georgia,serif;margin:5px 0 18px">Результаты поиска</h2><div style="font-size:10px;color:#999;margin-bottom:15px">Найдено ${list.length} рецептов</div><div class="recipe-grid">${list.map(recipeCard).join("") || `<div class="empty"><h2>Ничего не нашли</h2><p>Попробуй другое название блюда.</p></div>`}</div></section></div>`;
+}
+function detailHTML(r){
+ return `<section class="detail"><button class="back" onclick="showView('catalog')">← Назад к рецептам</button>
+ <div class="detail-top"><img src="${r.img}" alt="${r.name}"><div class="detail-info"><h1>${r.name}</h1><div class="detail-meta"><span>◷ ${r.time} мин</span><span>♧ 4 порции</span><span>⌁ ${r.diff}</span></div><p class="detail-desc">${r.desc}</p><button class="favorite-main" onclick="toggleFav(${r.id})">${isFav(r.id)?"♥ В избранном":"♡ Добавить в избранное"}</button></div></div>
+ <div class="detail-bottom"><div class="ingredients"><h3>Ингредиенты</h3>${r.ings.map(x=>`<div class="ingredient"><i></i>${x}</div>`).join("")}</div><div class="steps"><h3>Приготовление</h3>${r.steps.map((x,i)=>`<div class="step"><b>${i+1}</b><span>${x}</span></div>`).join("")}</div></div>
+ </section>`;
+}
+function renderHome(){document.getElementById("home").innerHTML=homeHTML()}
+function renderCatalog(){document.getElementById("catalog").innerHTML=catalogHTML(selectedCategory==="Все"?"Рецепты":selectedCategory, selectedCategory==="Все"?"Собрали блюда на каждый день":`Рецепты категории «${selectedCategory}»`)}
+function renderCategories(){document.getElementById("categories").innerHTML=categoriesHTML()}
+function renderFavorites(){document.getElementById("favorites").innerHTML=favoritesHTML()}
+function renderSearch(){document.getElementById("search").innerHTML=searchHTML()}
+function renderAll(){renderHome();renderCatalog();renderCategories();renderFavorites();if(document.getElementById("search").classList.contains("active"))renderSearch()}
+function showView(id){
+ document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===id));
+ if(id==="home")renderHome(); if(id==="catalog")renderCatalog(); if(id==="categories")renderCategories(); if(id==="favorites")renderFavorites(); if(id==="search")renderSearch();
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function filterCategory(c){selectedCategory=c;searchTerm="";showView("catalog")}
+function searchCatalog(v){searchTerm=v;renderCatalog()}
+function doSearch(v){searchTerm=v.trim();selectedCategory="Все";showView("search")}
+function focusSearch(){showView("search");setTimeout(()=>document.getElementById("searchInput")?.focus(),50)}
+function openRecipe(id){const r=recipes.find(x=>x.id===id);if(!r)return;document.getElementById("modalBox").innerHTML=detailHTML(r);document.getElementById("modal").classList.add("open")}
+function closeModal(){document.getElementById("modal").classList.remove("open")}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal()});
+renderHome();renderCatalog();renderCategories();renderFavorites();
+</script>
+</body>
+</html>
